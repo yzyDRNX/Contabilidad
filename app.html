@@ -1,0 +1,612 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema de Registro Contable</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f4f4f4;
+        }
+        h1, h2 {
+            text-align: center;
+            color: #333;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+            margin-bottom: 20px;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        th {
+            background-color: #ffcc00;
+        }
+        .activo-header {
+            background-color: #b3ffb3;
+        }
+        .pasivo-header {
+            background-color: #ffcccc;
+        }
+        .capital-header {
+            background-color: #ffff99;
+        }
+        tfoot {
+            font-weight: bold;
+            background-color: #f2f2f2;
+        }
+        form {
+            background: white;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0px 0px 10px rgba(0,0,0,0.1);
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label, input, select, button {
+            display: block;
+            width: 100%;
+            margin-top: 5px;
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            padding: 10px;
+            cursor: pointer;
+            margin-top: 15px;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        .transaction-buttons {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        .transaction-buttons button {
+            flex: 1;
+        }
+        .hidden {
+            display: none;
+        }
+        #empresa-info {
+            text-align: center;
+            margin-bottom: 15px;
+        }
+        .firma {
+            margin-top: 50px;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div id="empresa-info">
+            <h1>Relojería la hora</h1>
+            <h2>Balance general con anticipo de clientes</h2>
+            <p id="fecha-balance">Fecha: 25 de enero de 2025</p>
+        </div>
+
+        <div class="transaction-buttons">
+            <button id="btnAsientoApertura">Asiento de Apertura</button>
+            <button id="btnCompraEfectivo">Compra en Efectivo</button>
+            <button id="btnCompraCredito">Compra a Crédito</button>
+            <button id="btnAnticipoClientes">Anticipo de Clientes</button>
+        </div>
+
+        <!-- Formulario para el asiento de apertura -->
+        <form id="formAsientoApertura" class="hidden">
+            <h3>Asiento de Apertura</h3>
+            <div class="form-group">
+                <label for="cuentaActivo">Cuenta de Activo:</label>
+                <select id="cuentaActivo">
+                    <option value="Caja">Caja</option>
+                    <option value="Bancos">Bancos</option>
+                    <option value="Mercancías">Mercancías</option>
+                    <option value="IVA Acreditable">IVA Acreditable</option>
+                    <option value="Terrenos">Terrenos</option>
+                    <option value="Edificios">Edificios</option>
+                    <option value="Mobiliario">Mobiliario</option>
+                    <option value="Equipo de seguridad">Equipo de seguridad</option>
+                    <option value="Equipo de cómputo">Equipo de cómputo</option>
+                    <option value="Equipo de reparto">Equipo de reparto</option>
+                    <option value="Muebles">Muebles</option>
+                    <option value="Rentas pagadas">Rentas pagadas por adelantado</option>
+                    <option value="Papelería">Papelería e insumos de oficina</option>
+                </select>
+                <label for="montoActivo">Monto:</label>
+                <input type="number" id="montoActivo" min="0" step="0.01" required>
+                <label for="tipoActivo">Clasificación:</label>
+                <select id="tipoActivo">
+                    <option value="circulante">Circulante o a corto plazo</option>
+                    <option value="no-circulante">No circulante o a largo plazo</option>
+                </select>
+            </div>
+            <button type="submit">Agregar Cuenta</button>
+        </form>
+
+        <!-- Formulario para compra en efectivo -->
+        <form id="formCompraEfectivo" class="hidden">
+            <h3>Compra en Efectivo</h3>
+            <div class="form-group">
+                <label for="cuentaCompraEfectivo">Cuenta (Cargo):</label>
+                <input type="text" id="cuentaCompraEfectivo" required placeholder="Ejemplo: Mercancías, Mobiliario, Papelería...">
+                <label for="montoCompraEfectivo">Monto:</label>
+                <input type="number" id="montoCompraEfectivo" min="0" step="0.01" required>
+                <label for="ivaCompraEfectivo">IVA (16%):</label>
+                <input type="number" id="ivaCompraEfectivo" readonly>
+                <label for="tipoCompraEfectivo">Clasificación:</label>
+                <select id="tipoCompraEfectivo">
+                    <option value="circulante">Circulante o a corto plazo</option>
+                    <option value="no-circulante">No circulante o a largo plazo</option>
+                </select>
+            </div>
+            <button type="submit">Registrar Compra</button>
+        </form>
+
+        <!-- Formulario para compra a crédito -->
+        <form id="formCompraCredito" class="hidden">
+            <h3>Compra a Crédito</h3>
+            <div class="form-group">
+                <label for="cuentaCompraCredito">Cuenta (Cargo):</label>
+                <input type="text" id="cuentaCompraCredito" required placeholder="Ejemplo: Mercancías, Equipo de cómputo, Muebles...">
+                <label for="montoCompraCredito">Monto:</label>
+                <input type="number" id="montoCompraCredito" min="0" step="0.01" required>
+                <label for="ivaCompraCredito">IVA (16%):</label>
+                <input type="number" id="ivaCompraCredito" readonly>
+                <label for="proveedorCredito">Proveedor:</label>
+                <input type="text" id="proveedorCredito" required>
+                <label for="tipoCompraCredito">Clasificación:</label>
+                <select id="tipoCompraCredito">
+                    <option value="circulante">Circulante o a corto plazo</option>
+                    <option value="no-circulante">No circulante o a largo plazo</option>
+                </select>
+            </div>
+            <button type="submit">Registrar Compra a Crédito</button>
+        </form>
+
+        <!-- Formulario para anticipo de clientes -->
+        <form id="formAnticipoClientes" class="hidden">
+            <h3>Anticipo de Clientes</h3>
+            <div class="form-group">
+                <label for="clienteAnticipo">Cliente:</label>
+                <input type="text" id="clienteAnticipo" required>
+                <label for="montoAnticipo">Monto del anticipo:</label>
+                <input type="number" id="montoAnticipo" min="0" step="0.01" required>
+                <label for="formaPagoAnticipo">Forma de pago:</label>
+                <select id="formaPagoAnticipo">
+                    <option value="Efectivo">Efectivo</option>
+                    <option value="Transferencia">Transferencia bancaria</option>
+                </select>
+            </div>
+            <button type="submit">Registrar Anticipo</button>
+        </form>
+
+        <table>
+            <thead>
+                <tr>
+                    <th class="activo-header">Activo</th>
+                    <th>Monto activo</th>
+                    <th class="pasivo-header">Pasivo y capital</th>
+                    <th>Monto pasivo</th>
+                    <th class="capital-header">Capital contable</th>
+                    <th>Monto de capital</th>
+                </tr>
+            </thead>
+            <tbody id="balanceTable">
+                <!-- Las filas de activos circulantes -->
+                <tr id="circulanteHeader">
+                    <td>Circulante o a corto plazo</td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                </tr>
+                <!-- Las filas de activos no circulantes -->
+                <tr id="noCirculanteHeader" class="hidden">
+                    <td>No circulante o a largo plazo</td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                </tr>
+            </tbody>
+            <tfoot>
+                <tr>
+                    <td>Total activo</td>
+                    <td id="totalActivo">$0.00</td>
+                    <td>Total pasivo</td>
+                    <td id="totalPasivo">$0.00</td>
+                    <td>Capital social</td>
+                    <td id="totalCapital">$0.00</td>
+                </tr>
+            </tfoot>
+        </table>
+
+
+    </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            // Variables para llevar el total de cada categoría
+            let activoTotal = 0;
+            let pasivoTotal = 0;
+            let capitalTotal = 0;
+            let activosCirculantes = {};
+            let activosNoCirculantes = {};
+            let pasivos = {};
+            let capital = {};
+
+            // Inicializar fecha actual
+            const fechaActual = new Date();
+            document.getElementById("fecha-balance").textContent = `Fecha: ${fechaActual.getDate()} de ${obtenerNombreMes(fechaActual.getMonth())} de ${fechaActual.getFullYear()}`;
+
+            // Función para obtener el nombre del mes
+            function obtenerNombreMes(mes) {
+                const meses = ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'];
+                return meses[mes];
+            }
+
+            // Mostrar y ocultar formularios según el botón presionado
+            document.getElementById("btnAsientoApertura").addEventListener("click", function() {
+                ocultarTodosLosFormularios();
+                document.getElementById("formAsientoApertura").classList.remove("hidden");
+            });
+
+            document.getElementById("btnCompraEfectivo").addEventListener("click", function() {
+                ocultarTodosLosFormularios();
+                document.getElementById("formCompraEfectivo").classList.remove("hidden");
+            });
+
+            document.getElementById("btnCompraCredito").addEventListener("click", function() {
+                ocultarTodosLosFormularios();
+                document.getElementById("formCompraCredito").classList.remove("hidden");
+            });
+
+            document.getElementById("btnAnticipoClientes").addEventListener("click", function() {
+                ocultarTodosLosFormularios();
+                document.getElementById("formAnticipoClientes").classList.remove("hidden");
+            });
+
+            function ocultarTodosLosFormularios() {
+                document.querySelectorAll("form").forEach(form => {
+                    form.classList.add("hidden");
+                });
+            }
+
+            // Evento para calcular IVA automáticamente en compra en efectivo
+            document.getElementById("montoCompraEfectivo").addEventListener("input", function() {
+                const monto = parseFloat(this.value) || 0;
+                const iva = monto * 0.16;
+                document.getElementById("ivaCompraEfectivo").value = iva.toFixed(2);
+            });
+
+            // Evento para calcular IVA automáticamente en compra a crédito
+            document.getElementById("montoCompraCredito").addEventListener("input", function() {
+                const monto = parseFloat(this.value) || 0;
+                const iva = monto * 0.16;
+                document.getElementById("ivaCompraCredito").value = iva.toFixed(2);
+            });
+
+            // Manejar el formulario de asiento de apertura
+            document.getElementById("formAsientoApertura").addEventListener("submit", function(event) {
+                event.preventDefault();
+                
+                const cuenta = document.getElementById("cuentaActivo").value;
+                const monto = parseFloat(document.getElementById("montoActivo").value);
+                const tipoActivo = document.getElementById("tipoActivo").value;
+                
+                if (tipoActivo === "circulante") {
+                    // Agregar al activo circulante
+                    if (activosCirculantes[cuenta]) {
+                        activosCirculantes[cuenta] += monto;
+                    } else {
+                        activosCirculantes[cuenta] = monto;
+                    }
+                } else {
+                    // Agregar al activo no circulante
+                    if (activosNoCirculantes[cuenta]) {
+                        activosNoCirculantes[cuenta] += monto;
+                    } else {
+                        activosNoCirculantes[cuenta] = monto;
+                    }
+                    
+                    // Asegurarse de que el encabezado de no circulante esté visible
+                    document.getElementById("noCirculanteHeader").classList.remove("hidden");
+                }
+                
+                // Agregar capital social automáticamente
+                capital["Capital social"] = monto;
+                capitalTotal += monto;
+                
+                // Actualizar el activo total
+                activoTotal += monto;
+                
+                actualizarTabla();
+                this.reset();
+            });
+
+            // Manejar el formulario de compra en efectivo
+            document.getElementById("formCompraEfectivo").addEventListener("submit", function(event) {
+                event.preventDefault();
+                
+                const cuenta = document.getElementById("cuentaCompraEfectivo").value;
+                const monto = parseFloat(document.getElementById("montoCompraEfectivo").value);
+                const iva = parseFloat(document.getElementById("ivaCompraEfectivo").value);
+                const tipoCompra = document.getElementById("tipoCompraEfectivo").value;
+                
+                // Aumentar el activo según su clasificación
+                if (tipoCompra === "circulante") {
+                    if (activosCirculantes[cuenta]) {
+                        activosCirculantes[cuenta] += monto;
+                    } else {
+                        activosCirculantes[cuenta] = monto;
+                    }
+                } else {
+                    if (activosNoCirculantes[cuenta]) {
+                        activosNoCirculantes[cuenta] += monto;
+                    } else {
+                        activosNoCirculantes[cuenta] = monto;
+                    }
+                    document.getElementById("noCirculanteHeader").classList.remove("hidden");
+                }
+                
+                // Aumentar IVA acreditable
+                if (activosCirculantes["IVA Acreditable"]) {
+                    activosCirculantes["IVA Acreditable"] += iva;
+                } else {
+                    activosCirculantes["IVA Acreditable"] = iva;
+                }
+                
+                // Disminuir caja
+                if (activosCirculantes["Caja"]) {
+                    activosCirculantes["Caja"] -= (monto + iva);
+                } else {
+                    alert("No hay suficiente efectivo en caja para realizar esta compra.");
+                    return;
+                }
+                
+                // Actualizar totales
+                activoTotal += monto + iva - (monto + iva);  // Esto equivale a 0, solo para mostrar el proceso completo
+                
+                actualizarTabla();
+                this.reset();
+            });
+
+            // Manejar el formulario de compra a crédito
+            document.getElementById("formCompraCredito").addEventListener("submit", function(event) {
+                event.preventDefault();
+                
+                const cuenta = document.getElementById("cuentaCompraCredito").value;
+                const monto = parseFloat(document.getElementById("montoCompraCredito").value);
+                const iva = parseFloat(document.getElementById("ivaCompraCredito").value);
+                const proveedor = document.getElementById("proveedorCredito").value;
+                const tipoCompra = document.getElementById("tipoCompraCredito").value;
+                
+                // Aumentar el activo según su clasificación
+                if (tipoCompra === "circulante") {
+                    if (activosCirculantes[cuenta]) {
+                        activosCirculantes[cuenta] += monto;
+                    } else {
+                        activosCirculantes[cuenta] = monto;
+                    }
+                } else {
+                    if (activosNoCirculantes[cuenta]) {
+                        activosNoCirculantes[cuenta] += monto;
+                    } else {
+                        activosNoCirculantes[cuenta] = monto;
+                    }
+                    document.getElementById("noCirculanteHeader").classList.remove("hidden");
+                }
+                
+                // Aumentar IVA acreditable
+                if (activosCirculantes["IVA Acreditable"]) {
+                    activosCirculantes["IVA Acreditable"] += iva;
+                } else {
+                    activosCirculantes["IVA Acreditable"] = iva;
+                }
+                
+                // Aumentar pasivo (proveedores)
+                const cuentaProveedor = `Proveedores (${proveedor})`;
+                if (pasivos[cuentaProveedor]) {
+                    pasivos[cuentaProveedor] += (monto + iva);
+                } else {
+                    pasivos[cuentaProveedor] = (monto + iva);
+                }
+                
+                // Actualizar totales
+                activoTotal += monto + iva;
+                pasivoTotal += (monto + iva);
+                
+                actualizarTabla();
+                this.reset();
+            });
+
+            // Manejar el formulario de anticipo de clientes
+            document.getElementById("formAnticipoClientes").addEventListener("submit", function(event) {
+                event.preventDefault();
+                
+                const cliente = document.getElementById("clienteAnticipo").value;
+                const monto = parseFloat(document.getElementById("montoAnticipo").value);
+                const formaPago = document.getElementById("formaPagoAnticipo").value;
+                
+                // Aumentar el activo según la forma de pago
+                if (formaPago === "Efectivo") {
+                    if (activosCirculantes["Caja"]) {
+                        activosCirculantes["Caja"] += monto;
+                    } else {
+                        activosCirculantes["Caja"] = monto;
+                    }
+                } else { // Transferencia
+                    if (activosCirculantes["Bancos"]) {
+                        activosCirculantes["Bancos"] += monto;
+                    } else {
+                        activosCirculantes["Bancos"] = monto;
+                    }
+                }
+                
+                // Aumentar pasivo (anticipo de clientes)
+                const cuentaAnticipo = "Anticipo de clientes";
+                if (pasivos[cuentaAnticipo]) {
+                    pasivos[cuentaAnticipo] += monto;
+                } else {
+                    pasivos[cuentaAnticipo] = monto;
+                }
+                
+                // Actualizar totales
+                activoTotal += monto;
+                pasivoTotal += monto;
+                
+                actualizarTabla();
+                this.reset();
+            });
+
+            // Función para actualizar la tabla de balance
+            function actualizarTabla() {
+                const tableBody = document.getElementById("balanceTable");
+                
+                // Limpiar la tabla primero, manteniendo los encabezados
+                while (tableBody.firstChild) {
+                    tableBody.removeChild(tableBody.firstChild);
+                }
+                
+                // Recrear encabezados
+                const circulanteHeader = document.createElement("tr");
+                circulanteHeader.id = "circulanteHeader";
+                circulanteHeader.innerHTML = `
+                    <td><strong>Circulante o a corto plazo</strong></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                `;
+                tableBody.appendChild(circulanteHeader);
+                
+                // Mostrar activos circulantes
+                let rowIndex = 0;
+                for (const [cuenta, monto] of Object.entries(activosCirculantes)) {
+                    const row = document.createElement("tr");
+                    row.innerHTML = `
+                        <td>${cuenta}</td>
+                        <td>$${monto.toFixed(2)}</td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                    `;
+                    tableBody.appendChild(row);
+                    rowIndex++;
+                }
+                
+                // Encabezado para activos no circulantes
+                if (Object.keys(activosNoCirculantes).length > 0) {
+                    const noCirculanteHeader = document.createElement("tr");
+                    noCirculanteHeader.id = "noCirculanteHeader";
+                    noCirculanteHeader.innerHTML = `
+                        <td><strong>No circulante o a largo plazo</strong></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                    `;
+                    tableBody.appendChild(noCirculanteHeader);
+                    
+                    // Mostrar activos no circulantes
+                    for (const [cuenta, monto] of Object.entries(activosNoCirculantes)) {
+                        const row = document.createElement("tr");
+                        row.innerHTML = `
+                            <td>${cuenta}</td>
+                            <td>$${monto.toFixed(2)}</td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                        `;
+                        tableBody.appendChild(row);
+                        rowIndex++;
+                    }
+                }
+                
+                // Mostrar pasivos
+                rowIndex = 0;
+                for (const [cuenta, monto] of Object.entries(pasivos)) {
+                    // Obtener fila existente o crear una nueva
+                    let row;
+                    if (rowIndex < tableBody.children.length - 2) { // -2 para excluir encabezados
+                        row = tableBody.children[rowIndex + 1]; // +1 para saltar el encabezado de circulante
+                    } else {
+                        row = document.createElement("tr");
+                        tableBody.appendChild(row);
+                    }
+                    
+                    // Agregar las celdas de pasivo
+                    if (row.cells.length >= 4) {
+                        row.cells[2].textContent = cuenta;
+                        row.cells[3].textContent = `$${monto.toFixed(2)}`;
+                    } else {
+                        row.innerHTML = `
+                            <td></td>
+                            <td></td>
+                            <td>${cuenta}</td>
+                            <td>$${monto.toFixed(2)}</td>
+                            <td></td>
+                            <td></td>
+                        `;
+                    }
+                    rowIndex++;
+                }
+                
+                // Mostrar capital
+                rowIndex = 0;
+                for (const [cuenta, monto] of Object.entries(capital)) {
+                    // Obtener fila existente o crear una nueva
+                    let row;
+                    if (rowIndex < tableBody.children.length - 2) { // -2 para excluir encabezados
+                        row = tableBody.children[rowIndex + 1]; // +1 para saltar el encabezado de circulante
+                    } else {
+                        row = document.createElement("tr");
+                        tableBody.appendChild(row);
+                    }
+                    
+                    // Agregar las celdas de capital
+                    if (row.cells.length >= 6) {
+                        row.cells[4].textContent = cuenta;
+                        row.cells[5].textContent = `$${monto.toFixed(2)}`;
+                    } else {
+                        row.innerHTML = `
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td>${cuenta}</td>
+                            <td>$${monto.toFixed(2)}</td>
+                        `;
+                    }
+                    rowIndex++;
+                }
+                
+                // Actualizar totales
+                document.getElementById("totalActivo").textContent = `$${activoTotal.toFixed(2)}`;
+                document.getElementById("totalPasivo").textContent = `$${pasivoTotal.toFixed(2)}`;
+                document.getElementById("totalCapital").textContent = `$${capitalTotal.toFixed(2)}`;
+            }
+        });
+    </script>
+</body>
+</html>
